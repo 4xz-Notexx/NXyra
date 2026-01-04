@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>NXyra AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        /* ===== GLOBAL ===== */
+        body {
+            margin: 0;
+            height: 100vh;
+            font-family: "Segoe UI", sans-serif;
+            background: linear-gradient(-45deg, #020617, #0f172a, #020617);
+            background-size: 400% 400%;
+            animation: bg 12s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #e5e7eb;
+            overflow: hidden;
+        }
+
+        @keyframes bg {
+            0% {
+                background-position: 0% 50%
+            }
+
+            50% {
+                background-position: 100% 50%
+            }
+
+            100% {
+                background-position: 0% 50%
+            }
+        }
+
+        /* ===== BACKGROUND CANVAS ===== */
+        #bgCanvas {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+        }
+
+        /* ===== CHAT BOX ===== */
+        .chat {
+            width: 440px;
+            height: 720px;
+            background: rgba(2, 6, 23, .95);
+            backdrop-filter: blur(6px);
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, .9);
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            padding: 12px;
+            border-bottom: 1px solid #1e293b;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+
+        .header a {
+            color: #38bdf8;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* ===== NOTE ===== */
+        .note {
+            background: #1e293b;
+            color: #facc15;
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        /* ===== MESSAGES ===== */
+        .messages {
+            flex: 1;
+            padding: 14px;
+            overflow-y: auto;
+        }
+
+        .msg {
+            max-width: 80%;
+            padding: 10px 12px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            animation: fade .2s ease;
+        }
+
+        @keyframes fade {
+            from {
+                opacity: 0;
+                transform: translateY(5px)
+            }
+
+            to {
+                opacity: 1
+            }
+        }
+
+        .user {
+            background: #2563eb;
+            margin-left: auto
+        }
+
+        .bot {
+            background: #1e293b
+        }
+
+        /* ===== INPUT ===== */
+        .input {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #1e293b;
+        }
+
+        .input input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+        }
+
+        .input button {
+            margin-left: 6px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: none;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+        }
+
+        .clear-btn {
+            background: #ef4444 !important
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            font-size: 10px;
+            text-align: center;
+            padding: 6px;
+            opacity: .6;
+        }
+
+        /* ===== MODALS ===== */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-box {
+            background: #020617;
+            padding: 20px;
+            border-radius: 12px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .modal-box textarea {
+            width: 100%;
+            height: 80px;
+            border-radius: 8px;
+            border: 1px solid #1e293b;
+            background: #0f172a;
+            color: white;
+            padding: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 🌌 BACKGROUND CANVAS -->
+    <canvas id="bgCanvas"></canvas>
+
+    <div class="chat">
+
+        <!-- HEADER -->
+        <div class="header">
+            <div>
+                <b>NXyra AI 🤖</b><br>
+                <small>Hybrid Math Chatbot</small>
+            </div>
+            <div>
+                <a href="https://github.com/4xz-Notexx" target="_blank">GitHub</a> |
+                <a href="https://www.linkedin.com/in/anas-ahmad-527227386/" target="_blank">LinkedIn</a> |
+                <a onclick="openAbout()">About</a>
+            </div>
+        </div>
+
+        <!-- NOTE -->
+        <div class="note">
+            ⚠️ Currently, NXyra answers only simple mathematical expressions
+            (e.g. 5+7, (10+2)*3)
+            (more features coming soon!)
+            (use feedback button below to suggest features)
+            (UNDER DEVELOPMENT)
+        </div>
+
+        <!-- CHAT -->
+        <div class="messages" id="messages"></div>
+
+        <!-- INPUT -->
+        <div class="input">
+            <input id="msg" placeholder="Enter a math expression..." onkeydown="if(event.key==='Enter') send()">
+            <button onclick="startVoice()">🎤</button>
+            <button onclick="send()">Send</button>
+            <button onclick="openFeedback()">Feedback</button>
+            <button onclick="clearChat()" class="clear-btn">Clear</button>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">
+            👨‍💻 Developed by <b>Anas Ahmad</b> • NXyra v0.1
+        </div>
+
+    </div>
+
+    <!-- ===== FEEDBACK MODAL ===== -->
+    <div class="modal" id="fb">
+        <div class="modal-box">
+            <h3>Feedback</h3>
+            <textarea id="fbText" placeholder="Your feedback..."></textarea><br><br>
+            <button onclick="submitFeedback()">Send</button>
+            <button onclick="closeFeedback()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- ===== ABOUT MODAL ===== -->
+    <div class="modal" id="aboutModal">
+        <div class="modal-box">
+            <img src="profile.png" style="width:90px;height:90px;border-radius:50%;
+            object-fit:cover;border:3px solid #2563eb;margin-bottom:10px;">
+
+            <h3>Anas Ahmad</h3>
+            <p style="font-size:13px;opacity:.8;">
+                B.Tech (AI & ML) Student<br>
+                Developer of NXyra
+            </p>
+            <p style="font-size:12px;">
+                Passionate about AI, Web Development,
+                and building real-world projects.
+            </p>
+            <button onclick="closeAbout()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        /* ===== CHAT ===== */
+        function send() {
+            const i = document.getElementById("msg");
+            const t = i.value.trim();
+            if (!t) return;
+            const m = document.getElementById("messages");
+            m.innerHTML += `<div class="msg user">${t}</div>`;
+            i.value = "";
+            fetch("http://127.0.0.1:5000/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: t })
+            }).then(r => r.json()).then(d => {
+                m.innerHTML += `<div class="msg bot">${d.reply}</div>`;
+                m.scrollTop = m.scrollHeight;
+            });
+        }
+        function clearChat() { messages.innerHTML = "" }
+
+        /* ===== VOICE ===== */
+        function startVoice() {
+            if (!('webkitSpeechRecognition' in window))
+                return alert("Voice not supported");
+            let r = new webkitSpeechRecognition();
+            r.lang = "en-US";
+            r.onresult = e => msg.value = e.results[0][0].transcript;
+            r.start();
+        }
+
+        /* ===== FEEDBACK ===== */
+        function openFeedback() { fb.style.display = "flex" }
+        function closeFeedback() { fb.style.display = "none" }
+        function submitFeedback() {
+            const t = fbText.value.trim();
+            if (!t) return alert("Write feedback");
+            fetch("http://127.0.0.1:5000/feedback", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: t })
+            }).then(r => r.json()).then(d => {
+                alert(d.status);
+                fbText.value = "";
+                closeFeedback();
+            });
+        }
+
+        /* ===== ABOUT ===== */
+        function openAbout() { aboutModal.style.display = "flex" }
+        function closeAbout() { aboutModal.style.display = "none" }
+
+        /* ===== 🌌 PARTICLE BACKGROUND ===== */
+        const canvas = document.getElementById("bgCanvas");
+        const ctx = canvas.getContext("2d");
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.onresize = resize;
+
+        let dots = Array.from({ length: 80 }, () => ({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: Math.random() * 1.5 + 0.5,
+            s: Math.random() * 0.4 + 0.2
+        }));
+
+        (function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "rgba(255,255,255,0.7)";
+            dots.forEach(d => {
+                ctx.beginPath();
+                ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+                ctx.fill();
+                d.y += d.s;
+                if (d.y > canvas.height) d.y = 0;
+            });
+            requestAnimationFrame(animate);
+        })();
+    </script>
+
+</body>
+
+</html>
