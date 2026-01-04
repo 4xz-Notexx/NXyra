@@ -267,7 +267,7 @@
             const m = document.getElementById("messages");
             m.innerHTML += `<div class="msg user">${t}</div>`;
             i.value = "";
-            fetch("http://127.0.0.1:5000/chat", {
+ fetch("https://nxyra-backend.onrender.com/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: t })
@@ -294,7 +294,8 @@
         function submitFeedback() {
             const t = fbText.value.trim();
             if (!t) return alert("Write feedback");
-            fetch("http://127.0.0.1:5000/feedback", {
+           fetch("https://nxyra-backend.onrender.com/feedback", {
+
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: t })
@@ -341,5 +342,6 @@
     </script>
 
 </body>
+
 
 </html>
