@@ -9,7 +9,7 @@ CORS(app)
 
 # ================= EMAIL CONFIG =================
 EMAIL_ADDRESS = "custompros420@gmail.com"
-EMAIL_PASSWORD = "fascuqohxfrmhqjk"
+EMAIL_PASSWORD = "fascuqohxfrmhqjk"   # Gmail App Password
 # ================================================
 
 @app.route("/")
@@ -21,16 +21,31 @@ def chat():
     data = request.get_json()
     msg = data.get("message", "").strip().lower()
 
-    # ✅ SIMPLE MATH HANDLER (ANY NUMBERS)
-    if re.fullmatch(r"[0-9+\-*/(). ]+", msg):
+    # 👋 GREETING HANDLER
+    if msg in ["hi", "hello", "hyy", "hey", "hi nxyra", "hello nxyra"]:
+        reply = (
+            "Hello! 👋\n\n"
+            "I’m NXyra 🤖 — a hybrid math chatbot.\n\n"
+            "Designed & developed by Anas Ahmad "
+            "(B.Tech AI & ML).\n\n"
+            "I currently answer only basic mathematical expressions "
+            "(e.g. 5+7, (10+2)*3).\n\n"
+            "NXyra is under active development 🚧 — more features coming soon!"
+        )
+
+    # ➕ SIMPLE MATH HANDLER
+    elif re.fullmatch(r"[0-9+\-*/(). ]+", msg):
         try:
             reply = f"Answer: {eval(msg)}"
         except:
             reply = "Invalid mathematical expression."
+
+    # ⚠️ FALLBACK
     else:
         reply = (
-            "⚠️ I currently answer only simple mathematical expressions.\n"
-            "Examples: 5+7, (10+2)*3"
+            "⚠️ I currently support only basic mathematical expressions.\n"
+            "Try: 5+7 or (10+2)*3\n\n"
+            "NXyra is under development 🚧"
         )
 
     return jsonify({"reply": reply})
@@ -55,6 +70,6 @@ def feedback():
     except Exception as e:
         return jsonify({"status": "Failed to send feedback", "error": str(e)}), 500
 
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
-
